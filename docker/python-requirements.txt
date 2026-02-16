@@ -1,0 +1,6 @@
+# Python dependencies for PX4 / MAVLink scripting and plotting.
+
+pymavlink
+numpy
+matplotlib
+pyyaml

@@ -1,0 +1,7 @@
+ca-certificates
+curl
+git
+lsb-release
+sudo
+python3-pip
+wget
