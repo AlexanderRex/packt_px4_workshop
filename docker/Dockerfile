@@ -55,12 +55,41 @@ RUN for i in 1 2 3; do git clone --recurse-submodules -b ${PX4_VERSION} https://
     tar xf PX4-Autopilot/build/px4_sitl_default/romfs_files.tar -C px4_sitl/romfs/etc
 
 ########################################
+##            INSTALL QGC             ##
+########################################
+
+FROM base AS qgc
+
+ARG QGC_VERSION=latest
+ARG TARGETARCH
+
+# Download and extract QGC AppImage (extract to avoid FUSE requirement in Docker)
+RUN if [ "$TARGETARCH" = "amd64" ] || [ -z "$TARGETARCH" ]; then \
+        curl -L https://d176tv9ibo4jno.cloudfront.net/${QGC_VERSION}/QGroundControl-x86_64.AppImage -o /tmp/QGroundControl.AppImage && \
+        chmod +x /tmp/QGroundControl.AppImage && \
+        cd /tmp && ./QGroundControl.AppImage --appimage-extract && \
+        mv squashfs-root QGroundControl && rm QGroundControl.AppImage; \
+    elif [ "$TARGETARCH" = "arm64" ]; then \
+        curl -L https://d176tv9ibo4jno.cloudfront.net/${QGC_VERSION}/QGroundControl-aarch64.AppImage -o /tmp/QGroundControl.AppImage && \
+        chmod +x /tmp/QGroundControl.AppImage && \
+        cd /tmp && ./QGroundControl.AppImage --appimage-extract && \
+        mv squashfs-root QGroundControl && rm QGroundControl.AppImage; \
+    fi
+
+########################################
 ##         FINAL PX4 IMAGE             ##
 ########################################
 
 FROM build-px4 AS px4
 
+# Copy extracted QGC from qgc stage
+COPY --from=qgc --chown=${USER}:${USER} /tmp/QGroundControl /home/${USER}/QGroundControl
+
 USER ${USER}
 WORKDIR /home/${USER}
+
+# Create convenient symlink for QGC
+RUN ln -s /home/${USER}/QGroundControl/AppRun /home/${USER}/qgc && \
+    echo 'alias qgc="~/QGroundControl/AppRun"' >> /home/${USER}/.bashrc
 
 ENTRYPOINT ["/bin/bash"]

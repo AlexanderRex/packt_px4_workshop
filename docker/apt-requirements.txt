@@ -5,3 +5,11 @@ lsb-release
 sudo
 python3-pip
 wget
+# QGC dependencies
+gstreamer1.0-plugins-bad
+gstreamer1.0-libav
+gstreamer1.0-gl
+libfuse2
+libxcb-xinerama0
+libxkbcommon-x11-0
+libxcb-cursor-dev
