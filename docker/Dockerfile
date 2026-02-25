@@ -77,6 +77,29 @@ RUN if [ "$TARGETARCH" = "amd64" ] || [ -z "$TARGETARCH" ]; then \
     fi
 
 ########################################
+##        BUILD PLOTJUGGLER           ##
+########################################
+
+FROM base AS build-plotjuggler
+
+# Build dependencies for PlotJuggler (not needed at runtime)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        build-essential cmake \
+        qtbase5-dev libqt5svg5-dev libqt5websockets5-dev libqt5opengl5-dev \
+        libqt5x11extras5-dev libprotoc-dev libzmq3-dev liblz4-dev libzstd-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY docker/tools.repos /tmp/tools.repos
+RUN mkdir -p /tmp/tools && \
+    vcs import /tmp/tools < /tmp/tools.repos && \
+    cmake -S /tmp/tools/PlotJuggler -B /tmp/build-pj \
+        -DCMAKE_INSTALL_PREFIX=/opt/plotjuggler \
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo && \
+    cmake --build /tmp/build-pj -j"$(nproc)" --target install && \
+    rm -rf /tmp/tools /tmp/build-pj /tmp/tools.repos
+
+########################################
 ##         FINAL PX4 IMAGE             ##
 ########################################
 
@@ -85,11 +108,26 @@ FROM build-px4 AS px4
 # Copy extracted QGC from qgc stage
 COPY --from=qgc --chown=${USER}:${USER} /tmp/QGroundControl /home/${USER}/QGroundControl
 
+# Copy PlotJuggler from build stage
+COPY --from=build-plotjuggler /opt/plotjuggler /opt/plotjuggler
+ENV PATH="/opt/plotjuggler/bin:${PATH}"
+
+# Switch to root for tools installation
+USER root
+
+# Clone tools (MAVSDK-Python source for examples & reference) as root, then hand off
+COPY docker/tools.repos /tmp/tools.repos
+RUN mkdir -p /home/${USER}/tools && \
+    vcs import /home/${USER}/tools < /tmp/tools.repos && \
+    rm /tmp/tools.repos && \
+    chown -R ${USER}:${USER} /home/${USER}/tools
+
 USER ${USER}
 WORKDIR /home/${USER}
 
-# Create convenient symlink for QGC
+# Create convenient aliases
 RUN ln -s /home/${USER}/QGroundControl/AppRun /home/${USER}/qgc && \
-    echo 'alias qgc="~/QGroundControl/AppRun"' >> /home/${USER}/.bashrc
+    echo 'alias qgc="~/QGroundControl/AppRun"' >> /home/${USER}/.bashrc && \
+    echo 'alias plotjuggler="plotjuggler"' >> /home/${USER}/.bashrc
 
 ENTRYPOINT ["/bin/bash"]

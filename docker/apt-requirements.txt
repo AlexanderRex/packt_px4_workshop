@@ -13,3 +13,9 @@ libfuse2
 libxcb-xinerama0
 libxkbcommon-x11-0
 libxcb-cursor-dev
+# PlotJuggler runtime dependencies
+libqt5svg5
+libqt5websockets5
+libqt5opengl5
+libqt5x11extras5
+libzmq5

@@ -1,0 +1,9 @@
+repositories:
+  MAVSDK-Python:
+    type: git
+    url: https://github.com/mavlink/MAVSDK-Python.git
+    version: main
+  PlotJuggler:
+    type: git
+    url: https://github.com/facontidavide/PlotJuggler.git
+    version: 3.15.0
