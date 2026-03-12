@@ -30,13 +30,20 @@ RUN_OPTS=(
     -e QT_QPA_PLATFORM=xcb
     -v /tmp/.X11-unix:/tmp/.X11-unix:rw
     -v "$REPO_ROOT/scripts:/home/ubuntu/scripts:rw"
+    -v /usr/lib/wsl:/usr/lib/wsl:ro
     --device /dev/dri:/dev/dri
     -w /home/ubuntu
     --name packt-px4
 )
 
 if [[ -n "$NVIDIA" ]]; then
-    RUN_OPTS+=(--runtime nvidia -e NVIDIA_VISIBLE_DEVICES=all -e NVIDIA_DRIVER_CAPABILITIES=all)
+    RUN_OPTS+=(
+        --runtime nvidia
+        -e NVIDIA_VISIBLE_DEVICES=all
+        -e NVIDIA_DRIVER_CAPABILITIES=all
+        -e MESA_D3D12_DEFAULT_ADAPTER_NAME=NVIDIA
+        -e LD_LIBRARY_PATH=/usr/lib/wsl/lib
+    )
 fi
 
 # Default -i for interactive shell (entrypoint is /bin/bash; passing "bash" would run /bin/bash bash = error)

@@ -36,7 +36,7 @@ FROM base AS build-px4
 
 ARG PX4_VERSION=v1.16.0
 
-COPY docker/rcS.patch /tmp/rcS.patch
+COPY docker/gz_bridge_failure.patch /tmp/gz_bridge_failure.patch
 
 # Reduce git clone failures on flaky networks (buffer + retry)
 RUN git config --global http.postBuffer 524288000 && \
@@ -46,7 +46,7 @@ RUN git config --global http.postBuffer 524288000 && \
 USER ${USER}
 RUN for i in 1 2 3; do git clone --recurse-submodules -b ${PX4_VERSION} https://github.com/PX4/PX4-Autopilot.git /home/${USER}/PX4-Autopilot && break || { rm -rf /home/${USER}/PX4-Autopilot; sleep 15; }; done && \
     cd /home/${USER}/PX4-Autopilot && \
-    git apply /tmp/rcS.patch && \
+    git apply /tmp/gz_bridge_failure.patch && \
     ./Tools/setup/ubuntu.sh --no-nuttx && \
     make px4_sitl_default && \
     cd /home/${USER} && \
