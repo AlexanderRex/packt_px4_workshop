@@ -88,6 +88,44 @@ export DISPLAY=$(grep nameserver /etc/resolv.conf | awk '{print $2}'):0
 
 > **Note:** All `docker/docker_*.sh` scripts must be run from **inside a WSL 2 terminal**, not from PowerShell or CMD.
 
+### 4. (Optional) NVIDIA GPU Passthrough
+
+By default, WSL2 uses the Intel iGPU via D3D12/Mesa. To switch rendering to NVIDIA:
+
+1. Ensure the NVIDIA driver is installed **on Windows** (verify with `nvidia-smi` in WSL).
+
+2. Add the NVIDIA CUDA repository and install the toolkit:
+
+    ```sh
+    wget https://developer.download.nvidia.com/compute/cuda/repos/wsl-ubuntu/x86_64/cuda-keyring_1.1-1_all.deb
+    sudo dpkg -i cuda-keyring_1.1-1_all.deb
+    sudo apt update && sudo apt install -y cuda-toolkit-12-6
+    ```
+
+3. Add to `~/.bashrc`:
+
+    ```sh
+    export PATH=/usr/local/cuda-12.6/bin:$PATH
+    export LD_LIBRARY_PATH=/usr/local/cuda-12.6/lib64:/usr/lib/wsl/lib:$LD_LIBRARY_PATH
+    export MESA_D3D12_DEFAULT_ADAPTER_NAME=NVIDIA
+    ```
+
+4. Verify:
+
+    ```sh
+    sudo apt install -y mesa-utils
+    glxinfo | grep renderer
+    # Expected: GL_RENDERER: D3D12 (NVIDIA GeForce RTX ...)
+    ```
+
+5. Launch the container with `--nvidia`:
+
+    ```sh
+    ./docker/docker_run.sh --nvidia
+    ```
+
+> **Note:** In WSL2, OpenGL rendering goes through D3D12/Mesa — this is expected. NVIDIA is used for compute (CUDA) and GPU acceleration inside Docker containers.
+
 ---
 
 ## macOS (Intel & Apple Silicon)
