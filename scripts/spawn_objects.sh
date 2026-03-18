@@ -44,28 +44,43 @@
 
 set -euo pipefail
 
-WORLD="${PX4_GZ_WORLD:-default}"
+WORLD=$(gz topic -l 2>/dev/null | grep -oP '(?<=/world/)[^/]+' | head -1)
+if [[ -z "$WORLD" ]]; then
+    echo "Error: no Gazebo world detected. Is the simulation running?" >&2
+    exit 1
+fi
 
 # ---------------------------------------------------------------------------
-# Core: create via temp SDF file / remove via gz service
+# Core: create via SDF model directory / remove via gz service
 # ---------------------------------------------------------------------------
+
+# Store models in a persistent directory so Gazebo resolves URIs correctly
+# when saving worlds (avoids the file:///tmp bug).
+MODEL_DIR="${HOME}/.gz/models_spawned"
 
 gz_spawn() {
     local name="$1" sdf_content="$2" x="$3" y="$4" z="$5"
-    local tmpfile
-    tmpfile=$(mktemp /tmp/gz_spawn_XXXXXX.sdf)
-    cat > "$tmpfile" <<SDEOF
+    local model_dir="${MODEL_DIR}/${name}"
+    mkdir -p "$model_dir"
+    cat > "$model_dir/model.sdf" <<SDEOF
 <?xml version="1.0" ?>
 <sdf version="1.9">
 ${sdf_content}
 </sdf>
 SDEOF
+    cat > "$model_dir/model.config" <<CFEOF
+<?xml version="1.0" ?>
+<model>
+  <name>${name}</name>
+  <sdf version="1.9">model.sdf</sdf>
+</model>
+CFEOF
     gz service \
         -s "/world/${WORLD}/create" \
         --reqtype gz.msgs.EntityFactory \
         --reptype gz.msgs.Boolean \
         --timeout 5000 \
-        --req "sdf_filename: \"${tmpfile}\", name: \"${name}\", allow_renaming: false, pose: {position: {x: ${x}, y: ${y}, z: ${z}}}"
+        --req "sdf_filename: \"${model_dir}/model.sdf\", name: \"${name}\", allow_renaming: false, pose: {position: {x: ${x}, y: ${y}, z: ${z}}}"
     echo "  + $name at ($x, $y, $z)"
 }
 
@@ -165,6 +180,7 @@ OBSTACLES=(
     tower_1 tower_2
     ball_1
     platform
+    cone_1
 )
 
 spawn_demo() {
@@ -187,6 +203,10 @@ spawn_demo() {
     echo ""
     echo "[Primitives: box (flat)]"
     spawn_box    platform     2 2 0.15    10 10   0.075
+
+    echo ""
+    echo "[Fuel models]"
+    spawn_fuel   cone_1     "OpenRobotics/models/Construction Cone"  3 -2 0
 
     echo ""
     echo "Done. ${#OBSTACLES[@]} obstacles spawned."
