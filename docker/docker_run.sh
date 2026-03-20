@@ -30,8 +30,8 @@ RUN_OPTS=(
     -e QT_QPA_PLATFORM=xcb
     -v /tmp/.X11-unix:/tmp/.X11-unix:rw
     -v "$REPO_ROOT/scripts:/home/ubuntu/scripts:rw"
-    -v /usr/lib/wsl:/usr/lib/wsl:ro
-    --device /dev/dri:/dev/dri
+    $([ -d /usr/lib/wsl ] && echo "-v /usr/lib/wsl:/usr/lib/wsl:ro")
+    $([ -e /dev/dri ] && echo "--device /dev/dri:/dev/dri")
     -w /home/ubuntu
     --name packt-px4
 )
