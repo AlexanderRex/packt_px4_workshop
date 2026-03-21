@@ -99,8 +99,8 @@ cp 4901_gz_typhoon_h480 \
   ~/PX4-Autopilot/ROMFS/px4fmu_common/init.d-posix/airframes/
 
 # Add to CMakeLists.txt
-echo "    4901_gz_typhoon_h480" >> \
-  .../init.d-posix/airframes/CMakeLists.txt
+sed -i '$i\        4901_gz_typhoon_h480' \
+~/PX4-Autopilot/ROMFS/px4fmu_common/init.d-posix/airframes/CMakeLists.txt
 
 # Rebuild
 make px4_sitl_default
