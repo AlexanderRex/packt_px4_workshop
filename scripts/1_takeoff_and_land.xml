@@ -74,12 +74,6 @@
   <plugin ID="CSV Exporter"/>
  </Plugins>
  <!-- - - - - - - - - - - - - - - -->
- <previouslyLoaded_Datafiles>
-  <fileInfo filename="../PX4-Autopilot/build/px4_sitl_default/rootfs/log/2026-03-08/07_55_31.ulg" prefix="">
-   <plugin ID="DataLoad ULog"/>
-  </fileInfo>
- </previouslyLoaded_Datafiles>
- <!-- - - - - - - - - - - - - - - -->
  <customMathEquations/>
  <snippets/>
  <!-- - - - - - - - - - - - - - - -->
