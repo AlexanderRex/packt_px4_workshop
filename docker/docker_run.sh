@@ -22,6 +22,13 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+DEVICE_ARGS=()
+if [[ -e /dev/dri ]]; then
+    DEVICE_ARGS=(--device /dev/dri:/dev/dri)
+elif [[ -e /dev/dxg ]]; then
+    DEVICE_ARGS=(--device /dev/dxg:/dev/dri)
+fi
+
 RUN_OPTS=(
     -it --rm
     --network host
@@ -31,10 +38,11 @@ RUN_OPTS=(
     -v /tmp/.X11-unix:/tmp/.X11-unix:rw
     -v "$REPO_ROOT/scripts:/home/ubuntu/scripts:rw"
     $([ -d /usr/lib/wsl ] && echo "-v /usr/lib/wsl:/usr/lib/wsl:ro")
-    $([ -e /dev/dri ] && echo "--device /dev/dri:/dev/dri")
     -w /home/ubuntu
     --name packt-px4
 )
+
+RUN_OPTS+=("${DEVICE_ARGS[@]}")
 
 if [[ -n "$NVIDIA" ]]; then
     RUN_OPTS+=(
@@ -46,6 +54,9 @@ if [[ -n "$NVIDIA" ]]; then
     )
 fi
 
-# Default -i for interactive shell (entrypoint is /bin/bash; passing "bash" would run /bin/bash bash = error)
-CMD=("${@:--i}")
-docker run "${RUN_OPTS[@]}" packt-px4 "${CMD[@]}"
+# Launch QGC and PlotJuggler in background, then drop into bash
+docker run "${RUN_OPTS[@]}" packt-px4 -c '
+    plotjuggler &>/dev/null &
+    ./qgc &>/dev/null &
+    exec /bin/bash -i
+'
