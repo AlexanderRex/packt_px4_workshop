@@ -63,8 +63,8 @@ def _to_raw_item(seq: int, d: dict) -> RawMissionItem:
         x = 0 if len(p) <= 4 or p[4] is None else int(round(float(p[4]) * 1e7))
         y = 0 if len(p) <= 5 or p[5] is None else int(round(float(p[5]) * 1e7))
     else:
-        x = int(fp(4))
-        y = int(fp(5))
+        x = 0 if len(p) <= 4 or p[4] is None else int(float(p[4]))
+        y = 0 if len(p) <= 5 or p[5] is None else int(float(p[5]))
 
     return RawMissionItem(
         seq=seq,
