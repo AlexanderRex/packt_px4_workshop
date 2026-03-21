@@ -51,7 +51,7 @@ def _to_raw_item(seq: int, d: dict) -> RawMissionItem:
 
     def fp(i: int) -> float:
         v = p[i] if i < len(p) else None
-        return 0.0 if v is None else float(v)
+        return float('nan') if v is None else float(v)
 
     frame = d.get("frame", 3)
 
