@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 #
-# spawn_obstacles.sh — Spawn and manage objects in a running Gazebo Harmonic simulation.
+# spawn_objects.sh — Spawn and manage objects in a running Gazebo Harmonic simulation.
 #
 # Gazebo supports several ways to add objects to a world at runtime:
 #
 #   1. SDF primitives (box, cylinder, sphere)
-#      Defined inline as SDF XML strings. Good for simple obstacles.
+#      Defined inline as SDF XML strings. Good for simple objects.
 #      Primitives: <box>, <cylinder>, <sphere>, <capsule>, <ellipsoid>, <plane>
 #
 #   2. Gazebo Fuel models (online library)
@@ -25,22 +25,22 @@
 #           name="gz::sim::systems::UserCommands"/>
 #
 # Usage (run inside the container):
-#   ./spawn_obstacles.sh                   # spawn all demo obstacles
-#   ./spawn_obstacles.sh --clear           # remove all spawned obstacles
-#   ./spawn_obstacles.sh --list            # list obstacle names
-#   ./spawn_obstacles.sh box <name> <sx> <sy> <sz> <x> <y> <z>
-#   ./spawn_obstacles.sh cylinder <name> <radius> <length> <x> <y> <z>
-#   ./spawn_obstacles.sh sphere <name> <radius> <x> <y> <z>
-#   ./spawn_obstacles.sh fuel <name> <owner/model> <x> <y> <z>
-#   ./spawn_obstacles.sh remove <name>
+#   ./spawn_objects.sh                   # spawn all demo objects
+#   ./spawn_objects.sh --clear           # remove all spawned objects
+#   ./spawn_objects.sh --list            # list object names
+#   ./spawn_objects.sh box <name> <sx> <sy> <sz> <x> <y> <z>
+#   ./spawn_objects.sh cylinder <name> <radius> <length> <x> <y> <z>
+#   ./spawn_objects.sh sphere <name> <radius> <x> <y> <z>
+#   ./spawn_objects.sh fuel <name> <owner/model> <x> <y> <z>
+#   ./spawn_objects.sh remove <name>
 #
 # Examples:
-#   ./spawn_obstacles.sh box crate 1 1 1 5 0 0.5
-#   ./spawn_obstacles.sh cylinder pole 0.3 4 8 4 2
-#   ./spawn_obstacles.sh sphere ball 0.5 0 3 0.5
-#   ./spawn_obstacles.sh fuel tree1 "OpenRobotics/models/Oak tree" 10 5 0
-#   ./spawn_obstacles.sh fuel barrel1 "OpenRobotics/models/Construction Barrel" 3 0 0
-#   ./spawn_obstacles.sh remove crate
+#   ./spawn_objects.sh box crate 1 1 1 5 0 0.5
+#   ./spawn_objects.sh cylinder pole 0.3 4 8 4 2
+#   ./spawn_objects.sh sphere ball 0.5 0 3 0.5
+#   ./spawn_objects.sh fuel tree1 "OpenRobotics/models/Oak tree" 10 5 0
+#   ./spawn_objects.sh fuel barrel1 "OpenRobotics/models/Construction Barrel" 3 0 0
+#   ./spawn_objects.sh remove crate
 
 set -euo pipefail
 
@@ -159,7 +159,7 @@ spawn_sphere() {
 # ---------------------------------------------------------------------------
 
 # fuel <name> <owner/model_name> <pos_x> <pos_y> <pos_z>
-# Example: ./spawn_obstacles.sh fuel cone1 "OpenRobotics/models/Construction Cone" 3 0 0
+# Example: ./spawn_objects.sh fuel cone1 "OpenRobotics/models/Construction Cone" 3 0 0
 # Browse models: https://app.gazebosim.org/fuel/models
 spawn_fuel() {
     local name="$1" model="$2" x="$3" y="$4" z="$5"
@@ -172,10 +172,10 @@ spawn_fuel() {
 }
 
 # ---------------------------------------------------------------------------
-# Demo obstacle set
+# Demo object set
 # ---------------------------------------------------------------------------
 
-OBSTACLES=(
+OBJECTS=(
     wall_front wall_side wall_back
     tower_1 tower_2
     ball_1
@@ -184,7 +184,7 @@ OBSTACLES=(
 )
 
 spawn_demo() {
-    echo "Spawning demo obstacles..."
+    echo "Spawning demo objects..."
     echo ""
     echo "[Primitives: box]"
     spawn_box    wall_front   4 0.3 2.5   5  0    1.25
@@ -209,7 +209,7 @@ spawn_demo() {
     spawn_fuel   cone_1     "OpenRobotics/models/Construction Cone"  3 -2 0
 
     echo ""
-    echo "Done. ${#OBSTACLES[@]} obstacles spawned."
+    echo "Done. ${#OBJECTS[@]} objects spawned."
     echo "Run '$0 --clear' to remove them."
 }
 
@@ -233,7 +233,7 @@ clear_all() {
 
 case "${1:-}" in
     --clear)    clear_all ;;
-    --list)     printf '%s\n' "${OBSTACLES[@]}" ;;
+    --list)     printf '%s\n' "${OBJECTS[@]}" ;;
     box)        shift; spawn_box "$@" ;;
     cylinder)   shift; spawn_cylinder "$@" ;;
     sphere)     shift; spawn_sphere "$@" ;;
