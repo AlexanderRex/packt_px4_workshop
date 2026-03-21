@@ -54,6 +54,9 @@ if [[ -n "$NVIDIA" ]]; then
     )
 fi
 
-# Default -i for interactive shell (entrypoint is /bin/bash; passing "bash" would run /bin/bash bash = error)
-CMD=("${@:--i}")
-docker run "${RUN_OPTS[@]}" packt-px4 "${CMD[@]}"
+# Launch QGC and PlotJuggler in background, then drop into bash
+docker run "${RUN_OPTS[@]}" packt-px4 -c '
+    plotjuggler &>/dev/null &
+    ./qgc &>/dev/null &
+    exec /bin/bash -i
+'
